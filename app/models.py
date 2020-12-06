@@ -85,4 +85,5 @@ class Comment(db.Model):
     to_comment_id = db.Column(db.Integer, default=-1)
 
 
-
+def to_dict(model):
+    return {c.name: getattr(model, c.name) for c in model.__table__.columns}

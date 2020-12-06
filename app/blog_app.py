@@ -1,5 +1,5 @@
-import os,smtplib,random,json,traceback,re
-from app import creat_app,db
+import os,smtplib,random,json,traceback,re,redis,crontab
+from app import creat_app, db
 from flask import render_template, redirect, request, url_for, flash,session
 from app.auth import auth_blueprint
 from app.models import User,Post,Comment,Follow,PostLike,Collection
@@ -7,6 +7,8 @@ from werkzeug.utils import secure_filename
 from email.mime.text import MIMEText
 from email.utils import formataddr
 from threading import Timer
+from app.redisDB import red
+from datetime import datetime
 
 app = creat_app()
 app.secret_key = 'fafakkkdgks/.,,,'
@@ -16,6 +18,15 @@ ALLOWED_EXTENSIONS = set(['jpg','png','gif','bmp','jpeg'])
 
 my_sender = '366849574@qq.com'
 my_password = 'uxmdtcgqqowbbgfe'
+
+
+@app.route('/redis_send_code', methods=['POST'])
+def redis_send_code():
+    email = request.form['email']
+    text_code = gen_random_six_num()
+    red.set(email,text_code,ex=300)
+    mail(text_code, [email])
+    return 'send ok'
 
 def gen_random_six_num():
     s = ''
@@ -124,8 +135,9 @@ def register():
             return 'password bu yi zhi'
         if not check_password_format(password):
             return '密码格式错误'
-        text_code = session['code']
-        if text_code == code:
+        # text_code = session['code']
+        # if text_code == code:
+        if code == red.get(email):
             user = User(email=email,username=username, password=password)
             db.session.add(user)
             try:
@@ -133,6 +145,8 @@ def register():
             except:
                 db.session.rollback()
             return 'register in'
+        # print('code%s' %code)
+        # print('验证码%s' % red.get(email))
         return '验证码错误'
     return 'register'
 
@@ -277,6 +291,15 @@ def time_postlist():
     time_postlist = db.session.query(Post).order_by(Post.create_time.desc()).all()[:10]
     return json.dumps([(i.title, i.create_time.strftime('%Y-%m-%d  %H:%M:%S')) for i in time_postlist])
 
+@app.route('/redis_hot_postlist',methods=['GET'])
+def redis_hot_postlist():
+    hot_postlist = [json.loads(i) for i in red.zrange('hot_postlist',0,-1,desc=True)]
+    return json.dumps(hot_postlist)
+
+@app.route('/redis_time_postlist',methods=['GET'])
+def redis_time_postlist():
+    time_postlist = [json.loads(i) for i in red.zrange('time_postlist',0,-1,desc=True)]
+    return json.dumps(time_postlist)
 
 @app.route('/followed_postlist', methods=['GET'])
 def followed_postlist():
@@ -330,7 +353,6 @@ def get_post(id):
 def label_list(username):
     author = db.session.query(User).filter_by(username=username).first()
     label_list = db.session.query(Post.label).filter_by(author_id=author.user_id).distinct().all()
-
     return json.dumps(label_list)
 
 
@@ -381,6 +403,18 @@ def post_like():
             db.session.rollback()
         return '你点赞了这篇文章'
     return 'not  login  in'
+
+@app.route('/redis_post_like',methods=['POST'])
+def redis_post_like():
+    post_id = request.get_json()['post_id']
+    if 'email' in session:
+        author = db.session.query(User).filter_by(email=session['email']).first()
+        k = '{user_id}_{post_id}'.format(user_id=author.user_id,post_id=post_id)
+        red.hset('postlike',k,datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        return '你点赞了'
+    return 'not login in'
+
+
 
 
 @app.route('/post_unlike', methods=['POST'])
