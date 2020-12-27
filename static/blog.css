@@ -1,0 +1,120 @@
+#search {
+    position: relative;
+    width: 680px;
+    top: 8px;
+}
+
+#search-wrap {
+    position: absolute;
+    /*margin-top: -10px;*/
+    width: 350px;
+    height: 36px;
+    margin-left: 16px;
+    border-radius: 18px;
+    box-shadow: 0 0 3px rgba(0, 0, 0, .14);
+    background-color: #FFF;
+
+}
+
+#search-wrap .search-content {
+    box-shadow: none;
+    border: 0 none;
+    outline: none;
+    font-family: "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", Arial, Helvetica, sans-serif;
+    margin-top: 3px;
+    margin-left: 18px;
+    width: 298px;
+    height: 30px;
+}
+
+#search-wrap .search-choise {
+    box-shadow: none;
+    border: 0 none;
+    outline: none;
+    margin-left: 18px;
+    font-family: "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", Arial, Helvetica, sans-serif;
+}
+
+#search-wrap .search-choise option {
+    box-shadow: none;
+    border: 0 none;
+    outline: none;
+    margin-left: 18px;
+    font-family: "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", Arial, Helvetica, sans-serif;
+}
+
+#search-button {
+    border: 0px;
+    float: right;
+    /* margin: 4px 4px 4px 0; */
+    width: 66px;
+    top: -33px;
+    outline: none;
+    height: 36px;
+    border-radius: 0px 18px 18px 0px;
+    background-color: #FFF;
+    color: #000000;
+    text-align: center;
+    line-height: 28px;
+}
+
+
+/*
+ * Style tweaks
+ * --------------------------------------------------
+ */
+html,
+body {
+  overflow-x: hidden; /* Prevent scroll on narrow devices */
+}
+body {
+  padding-top: 70px;
+}
+footer {
+  padding: 30px 0;
+}
+
+/*
+ * Off Canvas
+ * --------------------------------------------------
+ */
+@media screen and (max-width: 767px) {
+  .row-offcanvas {
+    position: relative;
+    -webkit-transition: all .25s ease-out;
+         -o-transition: all .25s ease-out;
+            transition: all .25s ease-out;
+  }
+
+  .row-offcanvas-right {
+    right: 0;
+  }
+
+  .row-offcanvas-left {
+    left: 0;
+  }
+
+  .row-offcanvas-right
+  .sidebar-offcanvas {
+    right: -50%; /* 6 columns */
+  }
+
+  .row-offcanvas-left
+  .sidebar-offcanvas {
+    left: -50%; /* 6 columns */
+  }
+
+  .row-offcanvas-right.active {
+    right: 50%; /* 6 columns */
+  }
+
+  .row-offcanvas-left.active {
+    left: 50%; /* 6 columns */
+  }
+
+  .sidebar-offcanvas {
+    position: absolute;
+    top: 0;
+    width: 50%; /* 6 columns */
+  }
+}

@@ -1,0 +1,296 @@
+<!--
+ * @Description: 文章页
+ * @FilePath: /blog/templates/post.html
+ * @Author: liu.junlei@foxmail.com
+ * @Date: 2020-12-27 20:45:45
+ * @LastEditTime: 2020-12-27 20:56:10
+-->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <title>{{post.post_id}}</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+    <link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link href="../static/blog.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/editor.md/css/editormd.min.css" />
+    <script src="../static/editor.md/editormd.min.js"></script>
+    <script>
+        function like() {
+            var post_id = document.title;
+            var style = document.getElementById('like').getAttribute("style");
+            if (style == "") {
+                $.ajax({
+                    type: "POST", //用POST方式传输  
+                    dataType: "json", //数据格式:JSON  
+                    url: '/redis_post_like', //目标地址  
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        'post_id': post_id
+                    }),
+                    error: function (XMLHttpRequest, textStatus, errorThrown) { },
+                    success: function (msg) { }
+                });
+                document.getElementById('like').setAttribute("style", "color:red");
+                document.getElementById('like').innerHTML = parseInt(document.getElementById('like').innerHTML) + 1;
+            }
+            else {
+                $.ajax({
+                    type: "POST", //用POST方式传输  
+                    dataType: "json", //数据格式:JSON  
+                    url: '/redis_post_unlike', //目标地址  
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        'post_id': post_id
+                    }),
+                    error: function (XMLHttpRequest, textStatus, errorThrown) { },
+                    success: function (msg) { }
+                });
+                document.getElementById('like').setAttribute("style", "");
+                document.getElementById('like').innerHTML = parseInt(document.getElementById('like').innerHTML) - 1;
+            }
+        }
+        function collect() {
+            var post_id = document.title;
+            var style = document.getElementById('collect').getAttribute("style");
+            if (style == "") {
+                $.ajax({
+                    type: "POST", //用POST方式传输  
+                    dataType: "json", //数据格式:JSON  
+                    url: '/collection', //目标地址  
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        'post_id': post_id
+                    }),
+                    error: function (XMLHttpRequest, textStatus, errorThrown) { },
+                    success: function (msg) { }
+                });
+                document.getElementById('collect').setAttribute("style", "color:red");
+                document.getElementById('collect').innerHTML = parseInt(document.getElementById('collect').innerHTML) + 1;
+            }
+            else {
+                $.ajax({
+                    type: "POST", //用POST方式传输  
+                    dataType: "json", //数据格式:JSON  
+                    url: '/uncollection', //目标地址  
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        'post_id': post_id
+                    }),
+                    error: function (XMLHttpRequest, textStatus, errorThrown) { },
+                    success: function (msg) { }
+                });
+                document.getElementById('collect').setAttribute("style", "");
+                document.getElementById('collect').innerHTML = parseInt(document.getElementById('collect').innerHTML) - 1;
+            }
+        }
+        function write_comment(root_comment_id, to_comment_id) {
+            var node = document.getElementsByClassName(to_comment_id)[0];
+            if (node == null) {
+                var referenceNode = document.getElementById(to_comment_id);
+                var s = `<div class="${to_comment_id}"><form action="/writecomment?post_id={{post.post_id}}&root_comment_id=${root_comment_id}&to_comment_id=${to_comment_id}" method="POST"><div class="form-group"><textarea class="form-control" rows="3" name="comment"></textarea></div><div class="form-group"><button class="btn btn-primary" type="submit">发表</button></div></form></div>`;
+                var newNode = document.createElement('div');
+                newNode.innerHTML = s;
+                referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+            }
+            else {
+                node.parentNode.removeChild(node);
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <nav class="navbar navbar-fixed-top navbar-inverse">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">首页</a>
+            </div>
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+
+                    <div id="search">
+                        <div id="search-wrap">
+                            <input class="search-content" type="text" placeholder="搜索" name="word">
+                            <button id="search-button" class="glyphicon glyphicon-search" type="submit"></button>
+                        </div>
+                    </div>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <button type="button" class="btn btn-danger btn-default navbar-btn"
+                            onclick="javascrtpt:window.location.href='/writepost'">
+                            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> 写文章
+                        </button>
+                    </li>
+                    {% if not user %}
+                    <li><a href="/login">登录</a></li>
+                    <li><a href="/register">注册</a></li>
+                    {% else %}
+                    <li role="presentation" class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                            aria-expanded="false">
+                            {{user.username}} <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/user/{{user.username}}">我的主页</a></li>
+                            <li><a href="/collection_list/{{user.username}}">我的收藏</a></li>
+                            <li><a href="/update_userinfo">修改个人信息</a></li>
+                            <li><a href="/logout">退出</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+            <!-- /.nav-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+    <!-- /.navbar -->
+
+    <div class="container theme-showcase" role="main">
+        <div class="row row-offcanvas row-offcanvas-right">
+            <div class="col-xs-12 col-sm-9">
+                <h1>{{post.title}}</h1>
+                {% if user.username == post.author.username %}
+                <div style="float: right"><a href="/modifypost?post_id={{post.post_id}}">编辑</a></div>
+                {%endif%}
+                <p>由 <a href="/user/{{post.author.username}}">{{post.author.username}}</a> 创作于{{post.create_time}},
+                    最后修改于{{post.update_time}}, {{post.reading_num}}次浏览</p>
+                <p>标签：
+                    <button class="btn btn-default" href="">{{post.label}}</button>
+                </p>
+                {% if like_status %}
+                <button class="btn btn-default" onclick="like()"><span class="glyphicon glyphicon-thumbs-up"
+                        aria-hidden="true" id="like" style="color:red">{{post.liked.count()}}</span></button>
+                {% else %}
+                <button class="btn btn-default" onclick="like()"><span class="glyphicon glyphicon-thumbs-up"
+                        aria-hidden="true" id="like" style="">{{post.liked.count()}}</span></button>
+                {% endif %}
+                {% if collect_status %}
+                <button class="btn btn-default" onclick="collect()"><span class="glyphicon glyphicon-star"
+                        aria-hidden="true" id="collect" style="color:red">{{post.collected.count()}}</span></button>
+                {% else %}
+                <button class="btn btn-default" onclick="collect()"><span class="glyphicon glyphicon-star"
+                        aria-hidden="true" id="collect" style="">{{post.collected.count()}}</span></button>
+                {% endif %}
+                <link rel="stylesheet" href="../static/editor.md/css/editormd.preview.css" />
+                <hr class="simple">
+                <div id="test-markdown-view">
+                    <!-- Server-side output Markdown text -->
+                    <textarea style="display:none;">{{post.content}}</textarea>
+                </div>
+                <script src="../static/editor.md/editormd.js"></script>
+                <script src="../static/editor.md/lib/marked.min.js"></script>
+                <script src="../static/editor.md/lib/prettify.min.js"></script>
+                <script type="text/javascript">
+                    $(function () {
+                        var testView = editormd.markdownToHTML("test-markdown-view", {
+                            // markdown : "[TOC]\n### Hello world!\n## Heading 2", // Also, you can dynamic set Markdown text
+                            // htmlDecode : true,  // Enable / disable HTML tag encode.
+                            // htmlDecode : "style,script,iframe",  // Note: If enabled, you should filter some dangerous HTML tags for website security.
+                        });
+                    });
+                </script>
+                <hr class="simple">
+                <div>
+                    <h4>发表评论：</h4>
+                    <form action="/writecomment?post_id={{post.post_id}}" method="POST">
+                        <div class="form-group"><textarea class="form-control" rows="3" name="comment"></textarea></div>
+                        <div class="form-group"><button class="btn btn-primary" type="submit">发表</button></div>
+                    </form>
+                </div>
+                {%for root, children in comment.items()%}
+                <div class="comment">
+                    <div class="root_coment" style="width:100%; float:left">
+                        <div class="panel panel-default" id="{{root.comment_id}}"
+                            data-username="{{root.author.username}}">
+                            <div class="panel-heading" style="height:60px">
+                                <div class="use_face" style="float: left">
+                                    <a target="_blank" href="/user/{{root.author.username}}">
+                                        <img alt="{{root.author.username}}" src="{{root.author.photo}}" height="40"
+                                            width="40">
+                                    </a>
+                                </div>
+                                <div style="width:10px; min-height:1px; float: left;"></div>
+                                <div style="float: left">
+                                    <div><a target="_blank"
+                                            href="/user/{{root.author.username}}">{{root.author.username}}</a>
+                                    </div>
+                                    <div>{{root.create_time}}</div>
+                                </div>
+                                <div style="float: right"><a
+                                        onclick="write_comment('{{root.comment_id}}', '{{root.comment_id}}')">回复</a>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                {{root.content}}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="width:10%; height:100%; float: left;"></div>
+                    <div class="child_comment_list" style="width:90%; float:right">
+                        {% for child in children %}
+                        <div class="panel panel-default" id="{{child.comment_id}}"
+                            data-username="{{child.author.username}}">
+                            <div class="panel-heading" style="height:60px">
+                                <div class="use_face" style="float: left">
+                                    <a target="_blank" href="/user/{{child.author.username}}">
+                                        <img alt="{{child.author.username}}" src="{{child.author.photo}}" height="40"
+                                            width="40">
+                                    </a>
+                                </div>
+                                <div style="width:10px; min-height:1px; float: left;"></div>
+                                <div style="float: left">
+                                    <div><a target="_blank"
+                                            href="/user/{{child.author.username}}">{{child.author.username}}</a>
+                                        回复
+                                        <script>
+                                            var username = $("#{{child.to_comment_id}}").attr('data-username');
+                                            var s = `<a target="_blank" href="/user/${username}">${username}</a>`
+                                            document.write(s);
+                                        </script>
+                                    </div>
+                                    <div>{{child.create_time}}</div>
+                                </div>
+                                <div style="float: right"><a
+                                        onclick="write_comment('{{root.comment_id}}', '{{child.comment_id}}')">回复</a>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                {{child.content}}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+                <div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/.container-->
+</body>
+
+</html>
+
+</html>
+
+</html>

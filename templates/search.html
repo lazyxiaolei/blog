@@ -1,0 +1,124 @@
+<!--
+ * @Description: 搜索页
+ * @FilePath: /blog/templates/search.html
+ * @Author: liu.junlei@foxmail.com
+ * @Date: 2020-12-27 20:54:27
+ * @LastEditTime: 2020-12-27 20:56:26
+-->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <title>{{username}}</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+    <link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link href="../static/blog.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-fixed-top navbar-inverse">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">首页</a>
+            </div>
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+
+                    <div id="search">
+                        <div id="search-wrap">
+                            <input class="search-content" type="text" placeholder="搜索" name="word">
+                            <button id="search-button" class="glyphicon glyphicon-search" type="submit"></button>
+                        </div>
+                    </div>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <button type="button" class="btn btn-danger btn-default navbar-btn"
+                            onclick="javascrtpt:window.location.href='/writepost'">
+                            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> 写文章
+                        </button>
+                    </li>
+                    {% if not current_user %}
+                    <li><a href="/login">登录</a></li>
+                    <li><a href="/register">注册</a></li>
+                    {% else %}
+                    <li role="presentation" class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                            aria-expanded="false">
+                            {{current_user.username}} <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/user/{{current_user.username}}">我的主页</a></li>
+                            <li><a href="/collection_list/{{current_user.username}}">我的收藏</a></li>
+                            <li><a href="/update_userinfo">修改个人信息</a></li>
+                            <li><a href="/logout">退出</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div><!-- /.nav-collapse -->
+        </div><!-- /.container -->
+    </nav><!-- /.navbar -->
+
+    <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+            <div class="col-xs-12 col-sm-9">
+                <p class="pull-right visible-xs">
+                    <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas">Toggle nav</button>
+                </p>
+                <h3>你想找的用户</h3>
+                <div id="user">
+                    {% for i in user_list %}
+                    <div style="width:100px; height:50px">
+                        <div class="use_face" style="float: left">
+                            <a target="_blank" href="/user/{{i.username}}">
+                                <img alt="{{i.username}}" src="{{i.photo}}" height="40" width="40">
+                            </a>
+                        </div>
+                        <div style="width:10px; min-height:1px; float: left;"></div>
+                        <div style="float: left">
+                            <div><a target="_blank" href="/user/{{i.username}}">{{i.username}}</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <hr class="simple">
+                <h3>你想找的文章</h3>
+                <div id="post">
+                    {% for i in post_list %}
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><a href="/post/{{i.post_id}}">{{ i.title }}</a></h3>
+                            作者: <a href="/user/{{ i.author.username }}" style="color:white">{{ i.author.username }}</a>
+                            创作时间: {{ i.create_time }} 浏览量: {{ i.reading_num }}
+                        </div>
+                        <div class="panel-body">
+                            {{ i.content[:50] }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/.container-->
+</body>
+
+</html>
